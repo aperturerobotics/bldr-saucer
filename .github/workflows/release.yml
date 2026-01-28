@@ -1,0 +1,177 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14
+            platform: darwin-arm64
+          - os: macos-13
+            platform: darwin-x64
+          - os: ubuntu-latest
+            platform: linux-x64
+          - os: ubuntu-24.04-arm
+            platform: linux-arm64
+          - os: windows-latest
+            platform: win32-x64
+
+    runs-on: ${{ matrix.os }}
+    name: Build (${{ matrix.platform }})
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Ninja (macOS)
+        if: runner.os == 'macOS'
+        run: brew install ninja
+
+      - name: Install Ninja (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y ninja-build
+
+      - name: Install Ninja (Windows)
+        if: runner.os == 'Windows'
+        run: choco install ninja
+
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libssl-dev \
+            libgtk-3-dev \
+            libwebkit2gtk-4.1-dev \
+            pkg-config
+
+      - name: Configure CMake (Unix)
+        if: runner.os != 'Windows'
+        run: cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Configure CMake (Windows)
+        if: runner.os == 'Windows'
+        run: cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bldr-saucer-${{ matrix.platform }}
+          path: |
+            build/bldr-saucer
+            build/bldr-saucer.exe
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    name: Publish to npm
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '25'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Get version from tag
+        id: version
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Prepare platform packages
+        run: |
+          # Create bin directories for platform packages
+          mkdir -p npm/darwin-arm64/bin
+          mkdir -p npm/darwin-x64/bin
+          mkdir -p npm/linux-x64/bin
+          mkdir -p npm/linux-arm64/bin
+          mkdir -p npm/win32-x64/bin
+
+          # Copy binaries to platform packages
+          cp artifacts/bldr-saucer-darwin-arm64/bldr-saucer npm/darwin-arm64/bin/
+          cp artifacts/bldr-saucer-darwin-x64/bldr-saucer npm/darwin-x64/bin/
+          cp artifacts/bldr-saucer-linux-x64/bldr-saucer npm/linux-x64/bin/
+          cp artifacts/bldr-saucer-linux-arm64/bldr-saucer npm/linux-arm64/bin/
+          cp artifacts/bldr-saucer-win32-x64/bldr-saucer.exe npm/win32-x64/bin/
+
+          # Make binaries executable
+          chmod +x npm/darwin-arm64/bin/bldr-saucer
+          chmod +x npm/darwin-x64/bin/bldr-saucer
+          chmod +x npm/linux-x64/bin/bldr-saucer
+          chmod +x npm/linux-arm64/bin/bldr-saucer
+
+          # Copy source files to main package for fallback builds
+          mkdir -p npm/bldr-saucer/src
+          mkdir -p npm/bldr-saucer/cmake
+          cp src/*.cpp npm/bldr-saucer/src/
+          cp src/*.h npm/bldr-saucer/src/
+          cp CMakeLists.txt npm/bldr-saucer/
+          cp cmake/*.cmake npm/bldr-saucer/cmake/
+
+      - name: Update package versions
+        env:
+          VERSION: ${{ steps.version.outputs.VERSION }}
+        run: |
+          # Update main package version
+          cd npm/bldr-saucer
+          npm version "$VERSION" --no-git-tag-version
+          # Update optionalDependencies versions
+          jq --arg v "$VERSION" '.optionalDependencies = (.optionalDependencies | to_entries | map(.value = $v) | from_entries)' package.json > package.json.tmp
+          mv package.json.tmp package.json
+          cd ../..
+
+          # Update platform package versions
+          for platform in darwin-arm64 darwin-x64 linux-x64 linux-arm64 win32-x64; do
+            cd "npm/$platform"
+            npm version "$VERSION" --no-git-tag-version
+            cd ../..
+          done
+
+      - name: Publish platform packages
+        run: |
+          for platform in darwin-arm64 darwin-x64 linux-x64 linux-arm64 win32-x64; do
+            cd "npm/$platform"
+            npm publish --provenance --access public || echo "Package may already exist"
+            cd ../..
+          done
+
+      - name: Publish main package
+        run: |
+          cd npm/bldr-saucer
+          npm publish --provenance --access public
+
+  github-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create ${{ github.ref_name }} --generate-notes

@@ -1,0 +1,16 @@
+{
+  "name": "@aptre/bldr-saucer-darwin-x64",
+  "version": "0.1.0",
+  "description": "bldr-saucer binary for macOS x64 (Intel)",
+  "os": ["darwin"],
+  "cpu": ["x64"],
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aperturerobotics/bldr-saucer.git"
+  },
+  "license": "MIT",
+  "files": [
+    "bin/*"
+  ]
+}

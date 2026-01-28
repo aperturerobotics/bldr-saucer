@@ -1,0 +1,16 @@
+{
+  "name": "@aptre/bldr-saucer-linux-arm64",
+  "version": "0.1.0",
+  "description": "bldr-saucer binary for Linux ARM64",
+  "os": ["linux"],
+  "cpu": ["arm64"],
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aperturerobotics/bldr-saucer.git"
+  },
+  "license": "MIT",
+  "files": [
+    "bin/*"
+  ]
+}
