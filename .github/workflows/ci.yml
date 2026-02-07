@@ -52,6 +52,8 @@ jobs:
             gcc-14 g++-14 \
             libssl-dev \
             libgtk-4-dev \
+            libadwaita-1-dev \
+            libjson-glib-dev \
             libwebkitgtk-6.0-dev \
             pkg-config
 
