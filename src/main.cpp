@@ -65,14 +65,18 @@ coco::stray start(saucer::application* app) {
         }).detach();
     });
 
-    // Navigate to the bootstrap HTML served by Go.
-    // Include webDocumentId in the URL so JavaScript can register the document.
-    std::string nav_url = "bldr://localhost/";
+    // Use set_html with JavaScript redirect to work around WebKit's
+    // loadFileURL being called incorrectly for custom schemes.
+    std::string nav_url = "bldr:///index.html";
     const char* doc_id_env = std::getenv("BLDR_WEB_DOCUMENT_ID");
     if (doc_id_env && doc_id_env[0] != '\0') {
         nav_url += "?webDocumentId=" + std::string(doc_id_env);
     }
-    webview->set_url(nav_url);
+    std::string redirect_html =
+        "<!DOCTYPE html><html><head><meta charset=\"utf-8\">"
+        "<script>window.location.replace('" + nav_url + "');</script>"
+        "</head><body></body></html>";
+    webview->set_html(redirect_html);
 
     if (saucer_init.dev_tools) {
         webview->set_dev_tools(true);
