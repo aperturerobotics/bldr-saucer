@@ -68,7 +68,7 @@ jobs:
         if: runner.os != 'Windows'
         run: |
           cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release ${{ matrix.cmake_extra }}
-          cmake --build build
+          cmake --build build --parallel
         env:
           CC: ${{ runner.os == 'Linux' && 'gcc-14' || '' }}
           CXX: ${{ runner.os == 'Linux' && 'g++-14' || '' }}
@@ -80,7 +80,7 @@ jobs:
           for /f "tokens=*" %%i in ('vswhere -latest -products * -property installationPath') do set "VS_PATH=%%i"
           call "%VS_PATH%\VC\Auxiliary\Build\vcvarsall.bat" x64
           cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release
-          cmake --build build
+          cmake --build build --parallel
 
       - name: Upload artifact
         uses: actions/upload-artifact@v6
