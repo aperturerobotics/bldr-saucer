@@ -142,13 +142,13 @@ jobs:
         env:
           VERSION: ${{ steps.version.outputs.VERSION }}
         run: |
-          npm version "$VERSION" --no-git-tag-version
+          npm version "$VERSION" --no-git-tag-version --allow-same-version
           jq --arg v "$VERSION" '.optionalDependencies = (.optionalDependencies | to_entries | map(.value = $v) | from_entries)' package.json > package.json.tmp
           mv package.json.tmp package.json
 
           for platform in darwin-arm64 darwin-x64 linux-x64 linux-arm64 win32-x64; do
             cd "npm/$platform"
-            npm version "$VERSION" --no-git-tag-version
+            npm version "$VERSION" --no-git-tag-version --allow-same-version
             cd ../..
           done
 
