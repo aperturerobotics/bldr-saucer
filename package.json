@@ -1,6 +1,6 @@
 {
   "name": "@aptre/bldr-saucer",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Native webview bridge for Bldr using Saucer",
   "main": "index.js",
   "repository": {
@@ -33,11 +33,11 @@
     "release:publish": "git push && git push --tags"
   },
   "optionalDependencies": {
-    "@aptre/bldr-saucer-darwin-arm64": "0.1.2",
-    "@aptre/bldr-saucer-darwin-x64": "0.1.2",
-    "@aptre/bldr-saucer-linux-x64": "0.1.2",
-    "@aptre/bldr-saucer-linux-arm64": "0.1.2",
-    "@aptre/bldr-saucer-win32-x64": "0.1.2"
+    "@aptre/bldr-saucer-darwin-arm64": "0.1.3",
+    "@aptre/bldr-saucer-darwin-x64": "0.1.3",
+    "@aptre/bldr-saucer-linux-x64": "0.1.3",
+    "@aptre/bldr-saucer-linux-arm64": "0.1.3",
+    "@aptre/bldr-saucer-win32-x64": "0.1.3"
   },
   "files": [
     "index.js",
