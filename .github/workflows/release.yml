@@ -15,10 +15,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: macos-14
+          - os: macos-latest
             platform: darwin-arm64
-          - os: macos-13
+          - os: macos-latest
             platform: darwin-x64
+            cmake_extra: -DCMAKE_OSX_ARCHITECTURES=x86_64
           - os: ubuntu-latest
             platform: linux-x64
           - os: ubuntu-24.04-arm
@@ -53,6 +54,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
+            gcc-14 g++-14 \
             libssl-dev \
             libgtk-3-dev \
             libwebkit2gtk-4.1-dev \
@@ -64,8 +66,11 @@ jobs:
       - name: Configure and Build (Unix)
         if: runner.os != 'Windows'
         run: |
-          cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release
+          cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release ${{ matrix.cmake_extra }}
           cmake --build build
+        env:
+          CC: ${{ runner.os == 'Linux' && 'gcc-14' || '' }}
+          CXX: ${{ runner.os == 'Linux' && 'g++-14' || '' }}
 
       - name: Configure and Build (Windows)
         if: runner.os == 'Windows'
