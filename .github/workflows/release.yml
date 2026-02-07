@@ -32,6 +32,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+
       - name: Install Ninja (macOS)
         if: runner.os == 'macOS'
         run: brew install ninja
@@ -54,16 +58,23 @@ jobs:
             libwebkit2gtk-4.1-dev \
             pkg-config
 
-      - name: Configure CMake (Unix)
+      - name: Vendor Go dependencies
+        run: go mod vendor
+
+      - name: Configure and Build (Unix)
         if: runner.os != 'Windows'
-        run: cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release
+        run: |
+          cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build
 
-      - name: Configure CMake (Windows)
+      - name: Configure and Build (Windows)
         if: runner.os == 'Windows'
-        run: cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release
-
-      - name: Build
-        run: cmake --build build
+        shell: cmd
+        run: |
+          for /f "tokens=*" %%i in ('vswhere -latest -products * -property installationPath') do set "VS_PATH=%%i"
+          call "%VS_PATH%\VC\Auxiliary\Build\vcvarsall.bat" x64
+          cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -106,11 +117,9 @@ jobs:
       - name: Prepare platform packages
         run: |
           # Create bin directories for platform packages
-          mkdir -p npm/darwin-arm64/bin
-          mkdir -p npm/darwin-x64/bin
-          mkdir -p npm/linux-x64/bin
-          mkdir -p npm/linux-arm64/bin
-          mkdir -p npm/win32-x64/bin
+          for platform in darwin-arm64 darwin-x64 linux-x64 linux-arm64 win32-x64; do
+            mkdir -p "npm/$platform/bin"
+          done
 
           # Copy binaries to platform packages
           cp artifacts/bldr-saucer-darwin-arm64/bldr-saucer npm/darwin-arm64/bin/
@@ -125,25 +134,14 @@ jobs:
           chmod +x npm/linux-x64/bin/bldr-saucer
           chmod +x npm/linux-arm64/bin/bldr-saucer
 
-          # Copy source files to main package for fallback builds
-          mkdir -p npm/bldr-saucer/src
-          mkdir -p npm/bldr-saucer/cmake
-          cp src/*.cpp npm/bldr-saucer/src/
-          cp src/*.h npm/bldr-saucer/src/
-          cp CMakeLists.txt npm/bldr-saucer/
-          cp cmake/*.cmake npm/bldr-saucer/cmake/
-
       - name: Update package versions
         env:
           VERSION: ${{ steps.version.outputs.VERSION }}
         run: |
-          # Update main package version
-          cd npm/bldr-saucer
+          # Update main package version (root)
           npm version "$VERSION" --no-git-tag-version
-          # Update optionalDependencies versions
           jq --arg v "$VERSION" '.optionalDependencies = (.optionalDependencies | to_entries | map(.value = $v) | from_entries)' package.json > package.json.tmp
           mv package.json.tmp package.json
-          cd ../..
 
           # Update platform package versions
           for platform in darwin-arm64 darwin-x64 linux-x64 linux-arm64 win32-x64; do
@@ -161,9 +159,7 @@ jobs:
           done
 
       - name: Publish main package
-        run: |
-          cd npm/bldr-saucer
-          npm publish --provenance --access public
+        run: npm publish --provenance --access public
 
   github-release:
     runs-on: ubuntu-latest

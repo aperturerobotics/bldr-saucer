@@ -19,7 +19,7 @@ void SchemeForwarder::forward(const saucer::scheme::request& req,
     // Build FetchRequestInfo from the scheme request.
     proto::FetchRequestInfo info;
     info.method = req.method();
-    info.url = req.url().raw();
+    info.url = req.url().string();
 
     // Copy request headers.
     for (const auto& [key, val] : req.headers()) {

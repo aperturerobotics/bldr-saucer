@@ -2,6 +2,7 @@
 build/
 out/
 cmake-build-*/
+vendor/
 
 # Clangd cache
 .cache/
@@ -22,6 +23,13 @@ cmake-build-*/
 *.so
 *.dylib
 
+# Go
+.tools/
+
 # npm
 node_modules/
+bun.lock
 npm/*/bin/
+
+# Proto manifest
+.protoc-manifest.json

@@ -29,6 +29,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+
       - name: Install Ninja (macOS)
         if: runner.os == 'macOS'
         run: brew install ninja
@@ -51,16 +55,23 @@ jobs:
             libwebkit2gtk-4.1-dev \
             pkg-config
 
-      - name: Configure CMake (Unix)
+      - name: Vendor Go dependencies
+        run: go mod vendor
+
+      - name: Configure and Build (Unix)
         if: runner.os != 'Windows'
-        run: cmake -G Ninja -B build
+        run: |
+          cmake -G Ninja -B build
+          cmake --build build
 
-      - name: Configure CMake (Windows)
+      - name: Configure and Build (Windows)
         if: runner.os == 'Windows'
-        run: cmake -G Ninja -B build
-
-      - name: Build
-        run: cmake --build build
+        shell: cmd
+        run: |
+          for /f "tokens=*" %%i in ('vswhere -latest -products * -property installationPath') do set "VS_PATH=%%i"
+          call "%VS_PATH%\VC\Auxiliary\Build\vcvarsall.bat" x64
+          cmake -G Ninja -B build
+          cmake --build build
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

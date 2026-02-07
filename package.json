@@ -20,7 +20,10 @@
   },
   "homepage": "https://github.com/aperturerobotics/bldr-saucer#readme",
   "scripts": {
-    "postinstall": "node install.js"
+    "postinstall": "node install.js",
+    "gen": "bun run go:aptre -- generate",
+    "gen:force": "bun run go:aptre -- generate --force",
+    "go:aptre": "go run -mod=mod github.com/aperturerobotics/common/cmd/aptre"
   },
   "optionalDependencies": {
     "@aptre/bldr-saucer-darwin-arm64": "0.1.0",
@@ -35,5 +38,11 @@
     "src/**/*",
     "cmake/**/*",
     "CMakeLists.txt"
-  ]
+  ],
+  "devDependencies": {
+    "@aptre/common": "^0.30.1"
+  },
+  "dependencies": {
+    "@aptre/protobuf-es-lite": "^0.5.2"
+  }
 }

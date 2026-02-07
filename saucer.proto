@@ -1,0 +1,21 @@
+syntax = "proto3";
+package saucer;
+
+option go_package = "github.com/aperturerobotics/bldr-saucer;bldr_saucer";
+
+// ExternalLinks configures how external links are handled.
+enum ExternalLinks {
+  // EXTERNAL_LINKS_OS_BROWSER opens external links in the OS default browser.
+  EXTERNAL_LINKS_OS_BROWSER = 0;
+  // EXTERNAL_LINKS_DENY denies all external link navigation.
+  EXTERNAL_LINKS_DENY = 1;
+}
+
+// SaucerInit is passed from Go to the Saucer C++ process on startup.
+// Serialized as protobuf binary, base64-encoded, and passed via BLDR_SAUCER_INIT env var.
+message SaucerInit {
+  // DevTools enables the developer tools.
+  bool dev_tools = 1;
+  // ExternalLinks configures how external links are handled.
+  ExternalLinks external_links = 2;
+}

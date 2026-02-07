@@ -8,6 +8,19 @@
 namespace bldr {
 namespace proto {
 
+// SaucerInit corresponds to saucer.SaucerInit.
+// Passed from Go as base64-encoded protobuf via BLDR_SAUCER_INIT env var.
+struct SaucerInit {
+    bool dev_tools = false;      // field 1
+    uint32_t external_links = 0; // field 2 (enum ExternalLinks)
+};
+
+// DecodeSaucerInit decodes a SaucerInit protobuf message.
+bool DecodeSaucerInit(const uint8_t* buf, size_t len, SaucerInit& out);
+
+// Base64Decode decodes a base64-encoded string.
+std::vector<uint8_t> Base64Decode(const std::string& input);
+
 // FetchRequestInfo corresponds to web.fetch.FetchRequestInfo.
 struct FetchRequestInfo {
     std::string method;                        // field 1

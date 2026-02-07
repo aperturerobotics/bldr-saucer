@@ -4,6 +4,45 @@
 namespace bldr {
 namespace proto {
 
+// Base64 decoding table.
+static constexpr int8_t kBase64Table[256] = {
+    -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+    -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+    -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,62,-1,-1,-1,63,
+    52,53,54,55,56,57,58,59,60,61,-1,-1,-1,-1,-1,-1,
+    -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,
+    15,16,17,18,19,20,21,22,23,24,25,-1,-1,-1,-1,-1,
+    -1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,
+    41,42,43,44,45,46,47,48,49,50,51,-1,-1,-1,-1,-1,
+    -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+    -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+    -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+    -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+    -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+    -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+    -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+    -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+};
+
+std::vector<uint8_t> Base64Decode(const std::string& input) {
+    std::vector<uint8_t> out;
+    out.reserve(input.size() * 3 / 4);
+    uint32_t accum = 0;
+    int bits = 0;
+    for (char c : input) {
+        if (c == '=' || c == '\n' || c == '\r') continue;
+        int8_t val = kBase64Table[static_cast<uint8_t>(c)];
+        if (val < 0) continue;
+        accum = (accum << 6) | static_cast<uint32_t>(val);
+        bits += 6;
+        if (bits >= 8) {
+            bits -= 8;
+            out.push_back(static_cast<uint8_t>((accum >> bits) & 0xFF));
+        }
+    }
+    return out;
+}
+
 // Protobuf wire type constants.
 static constexpr uint8_t kVarint = 0;
 static constexpr uint8_t kLengthDelimited = 2;
@@ -296,6 +335,36 @@ bool DecodeFetchResponse(const uint8_t* buf, size_t len, FetchResponse& out) {
                 if (!decodeLengthDelimited(buf, len, offset, sub, slen)) return false;
                 out.has_data = true;
                 if (!decodeResponseData(sub, slen, out.data)) return false;
+                break;
+            }
+            default:
+                if (!skipField(buf, len, offset, wire)) return false;
+                break;
+        }
+    }
+    return true;
+}
+
+bool DecodeSaucerInit(const uint8_t* buf, size_t len, SaucerInit& out) {
+    size_t offset = 0;
+    while (offset < len) {
+        uint32_t field;
+        uint8_t wire;
+        if (!decodeTag(buf, len, offset, field, wire)) return false;
+
+        switch (field) {
+            case 1: { // dev_tools
+                if (wire != kVarint) return false;
+                uint64_t v;
+                if (!decodeVarint(buf, len, offset, v)) return false;
+                out.dev_tools = (v != 0);
+                break;
+            }
+            case 2: { // external_links
+                if (wire != kVarint) return false;
+                uint64_t v;
+                if (!decodeVarint(buf, len, offset, v)) return false;
+                out.external_links = static_cast<uint32_t>(v);
                 break;
             }
             default:
