@@ -66,7 +66,13 @@ coco::stray start(saucer::application* app) {
     });
 
     // Navigate to the bootstrap HTML served by Go.
-    webview->set_url(saucer::url::make({.scheme = "bldr", .host = "localhost", .path = "/"}));
+    // Include webDocumentId in the URL so JavaScript can register the document.
+    std::string nav_url = "bldr://localhost/";
+    const char* doc_id_env = std::getenv("BLDR_WEB_DOCUMENT_ID");
+    if (doc_id_env && doc_id_env[0] != '\0') {
+        nav_url += "?webDocumentId=" + std::string(doc_id_env);
+    }
+    webview->set_url(nav_url);
 
     if (saucer_init.dev_tools) {
         webview->set_dev_tools(true);
