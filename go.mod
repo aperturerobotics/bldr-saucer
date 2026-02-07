@@ -12,7 +12,7 @@ require (
 	github.com/aperturerobotics/json-iterator-lite v1.0.1-0.20251104042408-0c9eb8a3f726 // indirect
 	github.com/aperturerobotics/protobuf v0.0.0-20260203024654-8201686529c4 // indirect
 	github.com/aperturerobotics/protobuf-go-lite v0.12.1 // master
-	github.com/aperturerobotics/saucer v0.0.0-20260207001817-f8cf8c2143b3 // master
+	github.com/aperturerobotics/saucer v0.0.0-20260207010621-91123c7138e4 // master
 )
 
 require (
