@@ -1,6 +1,6 @@
 {
   "name": "@aptre/bldr-saucer-darwin-arm64",
-  "version": "0.1.5",
+  "version": "0.2.0",
   "description": "bldr-saucer binary for macOS ARM64 (Apple Silicon)",
   "os": [
     "darwin"
