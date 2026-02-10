@@ -4,8 +4,8 @@ github.com/aperturerobotics/cli v1.1.0 h1:7a+YRC+EY3npAnTzhHV5gLCiw91KS0Ts3XwLIL
 github.com/aperturerobotics/cli v1.1.0/go.mod h1:M7BFP9wow5ytTzMyJQOOO991fGfsUqdTI7gGEsHfTQ8=
 github.com/aperturerobotics/common v0.30.1 h1:bpgRROOmTY+NSuiKPEVLuPnDv6cuGXtoyFPYHGkWzJU=
 github.com/aperturerobotics/common v0.30.1/go.mod h1:o3LkfVkdyNtWz31nGkCKuMP7H2dxarmYCYgXmy1zjtg=
-github.com/aperturerobotics/cpp-yamux v0.0.0-20260202024600-0e230930a899 h1:MM8l+CDlsQdyIcRGei8UTmPXdTUUiO7QVxeBtp5qLUI=
-github.com/aperturerobotics/cpp-yamux v0.0.0-20260202024600-0e230930a899/go.mod h1:z43wdjwvCS9HJwxnqEtWgedAqWpeK6c5vozJoGXtUug=
+github.com/aperturerobotics/cpp-yamux v0.0.0-20260210211602-17940b831f59 h1:poYkT3TIaho78fYEjQ2w7oLkarSkkdK1EKdJvw9D3Z0=
+github.com/aperturerobotics/cpp-yamux v0.0.0-20260210211602-17940b831f59/go.mod h1:z43wdjwvCS9HJwxnqEtWgedAqWpeK6c5vozJoGXtUug=
 github.com/aperturerobotics/go-protoc-gen-prost v0.0.0-20260203094828-3faf47d2c868 h1:r2j7F1tGHkchPBLL55e44g/DfYqK2JV0Ed8suMAxmlU=
 github.com/aperturerobotics/go-protoc-gen-prost v0.0.0-20260203094828-3faf47d2c868/go.mod h1:OBb/beWmr/pDIZAUfi86j/4tBh2v5ctTxKMqSnh9c/4=
 github.com/aperturerobotics/go-protoc-wasi v0.0.0-20260131050911-b5f94b044584 h1:ER8DYYL71cTg39uZ+Gi699tL/hZoscUWDOw4DbizqhI=
