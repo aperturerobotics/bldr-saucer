@@ -1,9 +1,25 @@
 #include "scheme_forwarder.h"
 
+#include <algorithm>
+#include <cctype>
 #include <cstring>
 #include <iostream>
 
 namespace bldr {
+
+// toLower returns a lowercase copy of the string.
+static std::string toLower(const std::string& s) {
+    std::string out = s;
+    std::transform(out.begin(), out.end(), out.begin(),
+                   [](unsigned char c) { return std::tolower(c); });
+    return out;
+}
+
+// sendError sends an error response to the saucer writer.
+static void sendError(saucer::scheme::stream_writer& writer, int status) {
+    writer.start({.mime = "text/plain", .status = status});
+    writer.finish();
+}
 
 void SchemeForwarder::forward(const saucer::scheme::request& req,
                                saucer::scheme::stream_writer& writer) {
@@ -11,8 +27,7 @@ void SchemeForwarder::forward(const saucer::scheme::request& req,
     auto [stream, err] = session_->OpenStream();
     if (err != yamux::Error::OK || !stream) {
         std::cerr << "[forwarder] failed to open yamux stream" << std::endl;
-        writer.start({.mime = "text/plain", .status = 502});
-        writer.finish();
+        sendError(writer, 502);
         return;
     }
 
@@ -35,8 +50,7 @@ void SchemeForwarder::forward(const saucer::scheme::request& req,
     if (!writeFrame(stream.get(), reqInfoMsg)) {
         std::cerr << "[forwarder] failed to write request info" << std::endl;
         stream->Close();
-        writer.start({.mime = "text/plain", .status = 502});
-        writer.finish();
+        sendError(writer, 502);
         return;
     }
 
@@ -53,8 +67,7 @@ void SchemeForwarder::forward(const saucer::scheme::request& req,
         if (!writeFrame(stream.get(), reqDataMsg)) {
             std::cerr << "[forwarder] failed to write request body" << std::endl;
             stream->Close();
-            writer.start({.mime = "text/plain", .status = 502});
-            writer.finish();
+            sendError(writer, 502);
             return;
         }
     }
@@ -67,7 +80,7 @@ void SchemeForwarder::forward(const saucer::scheme::request& req,
         std::vector<uint8_t> frame;
         if (!readFrame(stream.get(), frame)) {
             if (!started) {
-                writer.start({.mime = "text/plain", .status = 502});
+                sendError(writer, 502);
             }
             break;
         }
@@ -76,7 +89,7 @@ void SchemeForwarder::forward(const saucer::scheme::request& req,
         if (!proto::DecodeFetchResponse(frame.data(), frame.size(), resp)) {
             std::cerr << "[forwarder] failed to decode response" << std::endl;
             if (!started) {
-                writer.start({.mime = "text/plain", .status = 502});
+                sendError(writer, 502);
             }
             break;
         }
@@ -85,20 +98,13 @@ void SchemeForwarder::forward(const saucer::scheme::request& req,
         if (resp.has_info && !started) {
             started = true;
 
-            // Determine MIME type from Content-Type header.
+            // Extract Content-Type header (case-insensitive).
             std::string mime = "application/octet-stream";
-            auto it = resp.info.headers.find("Content-Type");
-            if (it == resp.info.headers.end()) {
-                it = resp.info.headers.find("content-type");
-            }
-            if (it != resp.info.headers.end()) {
-                mime = it->second;
-            }
-
-            // Build response headers for saucer (excluding Content-Type which goes in mime).
             std::map<std::string, std::string> hdrs;
             for (const auto& [key, val] : resp.info.headers) {
-                if (key != "Content-Type" && key != "content-type") {
+                if (toLower(key) == "content-type") {
+                    mime = val;
+                } else {
                     hdrs[key] = val;
                 }
             }
@@ -135,7 +141,7 @@ bool SchemeForwarder::writeFrame(yamux::Stream* stream, const std::vector<uint8_
     // Write LittleEndian uint32 length prefix.
     uint8_t lenBuf[4];
     uint32_t msgLen = static_cast<uint32_t>(data.size());
-    std::memcpy(lenBuf, &msgLen, 4); // LE on LE platforms
+    std::memcpy(lenBuf, &msgLen, 4); // LE on LE platforms (x86_64, ARM64)
 
     auto err = stream->Write(lenBuf, 4);
     if (err != yamux::Error::OK) return false;
@@ -155,7 +161,7 @@ bool SchemeForwarder::readFrame(yamux::Stream* stream, std::vector<uint8_t>& out
     }
 
     uint32_t msgLen;
-    std::memcpy(&msgLen, lenBuf, 4); // LE on LE platforms
+    std::memcpy(&msgLen, lenBuf, 4); // LE on LE platforms (x86_64, ARM64)
 
     if (msgLen > kMaxFrameSize) return false;
 

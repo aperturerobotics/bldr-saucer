@@ -40,7 +40,7 @@ bool PipeClient::connect(const std::string& pipe_path) {
         return false;
     }
 
-    // Set pipe mode to message mode
+    // Set pipe to byte read mode.
     DWORD mode = PIPE_READMODE_BYTE;
     if (!SetNamedPipeHandleState(handle_, &mode, nullptr, nullptr)) {
         std::cerr << "Failed to set pipe mode: " << GetLastError() << std::endl;
@@ -193,12 +193,20 @@ bool PipeClient::write(const uint8_t* data, size_t length) {
     }
 
 #ifdef _WIN32
-    DWORD bytes_written = 0;
-    if (!WriteFile(handle_, data, (DWORD)length, &bytes_written, nullptr)) {
-        connected_ = false;
-        return false;
+    size_t total_written = 0;
+    while (total_written < length) {
+        DWORD bytes_written = 0;
+        if (!WriteFile(handle_, data + total_written, (DWORD)(length - total_written), &bytes_written, nullptr)) {
+            connected_ = false;
+            return false;
+        }
+        if (bytes_written == 0) {
+            connected_ = false;
+            return false;
+        }
+        total_written += bytes_written;
     }
-    return bytes_written == length;
+    return true;
 #else
     size_t total_written = 0;
     while (total_written < length) {

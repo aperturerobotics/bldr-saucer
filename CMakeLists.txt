@@ -34,7 +34,6 @@ add_executable(bldr-saucer
 )
 
 target_link_libraries(bldr-saucer PRIVATE saucer::saucer yamux)
-target_compile_features(bldr-saucer PRIVATE cxx_std_23)
 
 # Platform-specific socket libraries.
 if(WIN32)

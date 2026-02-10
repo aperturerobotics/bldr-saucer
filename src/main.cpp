@@ -21,8 +21,8 @@ coco::stray start(saucer::application* app) {
     const char* init_b64 = std::getenv("BLDR_SAUCER_INIT");
     if (init_b64) {
         auto data = bldr::proto::Base64Decode(init_b64);
-        if (!data.empty()) {
-            bldr::proto::DecodeSaucerInit(data.data(), data.size(), saucer_init);
+        if (!data.empty() && !bldr::proto::DecodeSaucerInit(data.data(), data.size(), saucer_init)) {
+            std::cerr << "Failed to decode BLDR_SAUCER_INIT" << std::endl;
         }
     }
 
