@@ -20,7 +20,8 @@ PipeClient::~PipeClient() {
 }
 
 bool PipeClient::connect(const std::string& pipe_path) {
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::mutex> rlock(read_mtx_);
+    std::lock_guard<std::mutex> wlock(write_mtx_);
 
 #ifdef _WIN32
     // Windows named pipe connection
@@ -82,8 +83,21 @@ bool PipeClient::connect(const std::string& pipe_path) {
 }
 
 void PipeClient::close() {
-    std::lock_guard<std::mutex> lock(mutex_);
+    // Set disconnected first so blocked reads/writes return.
     connected_ = false;
+
+#ifndef _WIN32
+    // Shut down the socket to unblock any thread in a blocking read.
+    // This is safe to call without holding locks since shutdown on a
+    // valid fd is thread-safe and causes blocked read/write to return.
+    int fd = fd_;
+    if (fd >= 0) {
+        ::shutdown(fd, SHUT_RDWR);
+    }
+#endif
+
+    std::lock_guard<std::mutex> rlock(read_mtx_);
+    std::lock_guard<std::mutex> wlock(write_mtx_);
 
 #ifdef _WIN32
     if (handle_ != INVALID_HANDLE_VALUE) {
@@ -107,7 +121,7 @@ std::vector<uint8_t> PipeClient::read() {
 }
 
 std::vector<uint8_t> PipeClient::read_with_timeout(int timeout_ms) {
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(read_mtx_);
     std::vector<uint8_t> result;
 
     if (!connected_) {
@@ -186,7 +200,7 @@ std::vector<uint8_t> PipeClient::read_with_timeout(int timeout_ms) {
 }
 
 bool PipeClient::write(const uint8_t* data, size_t length) {
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(write_mtx_);
 
     if (!connected_ || data == nullptr || length == 0) {
         return false;

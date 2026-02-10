@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <cctype>
 #include <cstring>
-#include <iostream>
 
 namespace bldr {
 
@@ -26,7 +25,6 @@ void SchemeForwarder::forward(const saucer::scheme::request& req,
     // Open a new yamux stream.
     auto [stream, err] = session_->OpenStream();
     if (err != yamux::Error::OK || !stream) {
-        std::cerr << "[forwarder] failed to open yamux stream" << std::endl;
         sendError(writer, 502);
         return;
     }
@@ -48,7 +46,6 @@ void SchemeForwarder::forward(const saucer::scheme::request& req,
     // Serialize and send FetchRequestInfo frame.
     auto reqInfoMsg = proto::EncodeFetchRequest_Info(info);
     if (!writeFrame(stream.get(), reqInfoMsg)) {
-        std::cerr << "[forwarder] failed to write request info" << std::endl;
         stream->Close();
         sendError(writer, 502);
         return;
@@ -65,7 +62,6 @@ void SchemeForwarder::forward(const saucer::scheme::request& req,
 
         auto reqDataMsg = proto::EncodeFetchRequest_Data(bodyData);
         if (!writeFrame(stream.get(), reqDataMsg)) {
-            std::cerr << "[forwarder] failed to write request body" << std::endl;
             stream->Close();
             sendError(writer, 502);
             return;
@@ -87,7 +83,6 @@ void SchemeForwarder::forward(const saucer::scheme::request& req,
 
         proto::FetchResponse resp;
         if (!proto::DecodeFetchResponse(frame.data(), frame.size(), resp)) {
-            std::cerr << "[forwarder] failed to decode response" << std::endl;
             if (!started) {
                 sendError(writer, 502);
             }
@@ -133,7 +128,9 @@ void SchemeForwarder::forward(const saucer::scheme::request& req,
         }
     }
 
-    writer.finish();
+    if (started) {
+        writer.finish();
+    }
     stream->Close();
 }
 

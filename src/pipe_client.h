@@ -64,7 +64,8 @@ private:
     int fd_ = -1;
 #endif
     std::atomic<bool> connected_{false};
-    std::mutex mutex_;
+    std::mutex read_mtx_;
+    std::mutex write_mtx_;
 };
 
 } // namespace bldr
