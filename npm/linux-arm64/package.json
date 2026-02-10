@@ -1,6 +1,6 @@
 {
   "name": "@aptre/bldr-saucer-linux-arm64",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "bldr-saucer binary for Linux ARM64",
   "os": [
     "linux"
