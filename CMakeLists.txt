@@ -19,6 +19,7 @@ set(saucer_serializer "Glaze" CACHE STRING "" FORCE)
 set(saucer_no_version_check ON CACHE BOOL "" FORCE)
 set(saucer_examples OFF CACHE BOOL "" FORCE)
 set(saucer_tests OFF CACHE BOOL "" FORCE)
+set(saucer_exceptions OFF CACHE BOOL "" FORCE)
 
 # cpp-yamux options.
 set(YAMUX_BUILD_TESTS OFF CACHE BOOL "" FORCE)
