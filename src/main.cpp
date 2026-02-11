@@ -135,10 +135,13 @@ coco::stray start(saucer::application* app) {
                 std::string code(data.begin(), data.end());
 
                 // Execute the JavaScript code in the webview (guarded against shutdown).
+                // Cast to webview* to call webview::execute(cstring_view) instead of
+                // smartview::execute(format_string) which has a consteval constructor
+                // that breaks std::thread lambdas in C++23.
                 {
                     std::lock_guard<std::mutex> lock(*webview_mtx);
                     if (webview_alive->load()) {
-                        webview_ptr->execute(code);
+                        static_cast<saucer::webview*>(webview_ptr)->execute(code);
                     }
                 }
 

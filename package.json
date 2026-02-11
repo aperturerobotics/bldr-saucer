@@ -46,7 +46,7 @@
     "CMakeLists.txt"
   ],
   "devDependencies": {
-    "@aptre/common": "^0.30.1"
+    "@aptre/common": "^0.30.3"
   },
   "dependencies": {
     "@aptre/protobuf-es-lite": "^0.5.2"
