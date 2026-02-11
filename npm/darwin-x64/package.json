@@ -1,6 +1,6 @@
 {
   "name": "@aptre/bldr-saucer-darwin-x64",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "bldr-saucer binary for macOS x64 (Intel)",
   "os": [
     "darwin"
