@@ -5,6 +5,7 @@
 #include "scheme_forwarder.h"
 
 #include <atomic>
+#include <condition_variable>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
@@ -12,7 +13,63 @@
 #include <mutex>
 #include <string>
 #include <thread>
+#include <unordered_map>
 #include <vector>
+
+// EvalRegistry tracks pending eval requests and their results.
+// Worker threads register a request ID, execute JS that posts results via
+// the saucer message channel, then wait on a condition variable for the
+// message handler to deliver the result.
+struct EvalRegistry {
+    struct Pending {
+        bool ready = false;
+        std::string result;
+        std::string error;
+    };
+
+    std::mutex mtx;
+    std::condition_variable cv;
+    std::unordered_map<std::string, Pending> pending;
+
+    // Register registers a new eval request and returns the ID.
+    void Register(const std::string& id) {
+        std::lock_guard<std::mutex> lock(mtx);
+        pending[id] = Pending{};
+    }
+
+    // Deliver delivers a result for a pending eval request.
+    // Returns true if the ID was found.
+    bool Deliver(const std::string& id, const std::string& result, const std::string& error) {
+        std::lock_guard<std::mutex> lock(mtx);
+        auto it = pending.find(id);
+        if (it == pending.end()) {
+            return false;
+        }
+        it->second.ready = true;
+        it->second.result = result;
+        it->second.error = error;
+        cv.notify_all();
+        return true;
+    }
+
+    // Wait waits for a result for the given eval ID (up to timeout_ms).
+    // Returns the response, with empty fields on timeout.
+    bldr::proto::EvalJSResponse Wait(const std::string& id, int timeout_ms) {
+        std::unique_lock<std::mutex> lock(mtx);
+        cv.wait_for(lock, std::chrono::milliseconds(timeout_ms), [this, &id] {
+            auto it = pending.find(id);
+            return it != pending.end() && it->second.ready;
+        });
+        bldr::proto::EvalJSResponse resp;
+        auto it = pending.find(id);
+        if (it != pending.end()) {
+            resp.result = std::move(it->second.result);
+            resp.error = std::move(it->second.error);
+            pending.erase(it);
+        }
+        return resp;
+    }
+};
 
 coco::stray start(saucer::application* app) {
     const char* runtime_id_env = std::getenv("BLDR_RUNTIME_ID");
@@ -90,10 +147,49 @@ coco::stray start(saucer::application* app) {
     auto webview_mtx = std::make_shared<std::mutex>();
     auto webview_alive = std::make_shared<std::atomic<bool>>(true);
 
+    // Eval result registry: worker threads register pending evals, the message
+    // handler delivers results from JavaScript back to the waiting thread.
+    auto eval_registry = std::make_shared<EvalRegistry>();
+
+    // Register a message handler to intercept eval results from JavaScript.
+    // The Go side wraps JS code so it posts the result via postMessage with a
+    // prefix format: __bldr_eval:<eval_id>:r:<result> or __bldr_eval:<eval_id>:e:<error>.
+    // The smartview's own handler returns unhandled for unrecognized messages,
+    // so this handler sees them next.
+    constexpr std::string_view eval_prefix = "__bldr_eval:";
+    webview->on<saucer::webview::event::message>({{.func = [eval_registry, eval_prefix](std::string_view message) -> saucer::status {
+        if (!message.starts_with(eval_prefix)) {
+            return saucer::status::unhandled;
+        }
+
+        // Parse prefix format: __bldr_eval:<eval_id>:<type>:<data>
+        auto rest = message.substr(eval_prefix.size());
+        auto sep1 = rest.find(':');
+        if (sep1 == std::string_view::npos || sep1 + 2 >= rest.size()) {
+            return saucer::status::unhandled;
+        }
+        auto sep2 = rest.find(':', sep1 + 1);
+        if (sep2 == std::string_view::npos) {
+            return saucer::status::unhandled;
+        }
+
+        std::string eval_id(rest.substr(0, sep1));
+        char type = rest[sep1 + 1];
+        std::string data(rest.substr(sep2 + 1));
+
+        if (type == 'r') {
+            eval_registry->Deliver(eval_id, data, "");
+        } else {
+            eval_registry->Deliver(eval_id, "", data);
+        }
+        return saucer::status::handled;
+    }}});
+
     // Start accept loop for Go-initiated streams (debug eval).
     // webview is a std::expected; use &(*webview) to get a pointer to the contained value.
     auto* webview_ptr = &(*webview);
-    std::thread accept_thread([session, webview_ptr, webview_mtx, webview_alive]() {
+    auto eval_counter = std::make_shared<std::atomic<uint64_t>>(0);
+    std::thread accept_thread([session, webview_ptr, webview_mtx, webview_alive, eval_registry, eval_counter]() {
         while (true) {
             auto [stream, err] = session->Accept();
             if (err != yamux::Error::OK || !stream) {
@@ -101,7 +197,7 @@ coco::stray start(saucer::application* app) {
             }
 
             // Handle each stream in a detached thread so accept loop continues.
-            std::thread([stream, webview_ptr, webview_mtx, webview_alive]() {
+            std::thread([stream, webview_ptr, webview_mtx, webview_alive, eval_registry, eval_counter]() {
                 // Read length-prefixed command frame.
                 uint8_t len_buf[4];
                 size_t total = 0;
@@ -132,7 +228,28 @@ coco::stray start(saucer::application* app) {
                     return;
                 }
 
-                std::string code(data.begin(), data.end());
+                // Decode the EvalJSRequest protobuf from Go.
+                bldr::proto::EvalJSRequest req;
+                if (!bldr::proto::DecodeEvalJSRequest(data.data(), data.size(), req)) {
+                    stream->Close();
+                    return;
+                }
+
+                // The code from Go is already wrapped in an async IIFE that posts
+                // the result via postMessage. It contains a placeholder __EVAL_ID__
+                // that we replace with a unique ID for result correlation.
+                std::string code = std::move(req.code);
+                std::string eval_id = "e" + std::to_string(eval_counter->fetch_add(1));
+
+                // Replace the __EVAL_ID__ placeholder with the actual eval ID.
+                const std::string placeholder = "__EVAL_ID__";
+                auto pos = code.find(placeholder);
+                if (pos != std::string::npos) {
+                    code.replace(pos, placeholder.size(), eval_id);
+                }
+
+                // Register the eval request before executing the code.
+                eval_registry->Register(eval_id);
 
                 // Execute the JavaScript code in the webview (guarded against shutdown).
                 // Cast to webview* to call webview::execute(cstring_view) instead of
@@ -145,13 +262,19 @@ coco::stray start(saucer::application* app) {
                     }
                 }
 
-                // Write a simple "ok" response.
-                std::string resp = "ok";
+                // Wait for the JavaScript result (30 second timeout).
+                auto resp = eval_registry->Wait(eval_id, 30000);
+                if (resp.result.empty() && resp.error.empty()) {
+                    resp.error = "eval timeout";
+                }
+
+                // Encode the EvalJSResponse protobuf and send it back.
+                auto resp_buf = bldr::proto::EncodeEvalJSResponse(resp);
                 uint8_t resp_len_buf[4];
-                uint32_t resp_len = static_cast<uint32_t>(resp.size());
+                uint32_t resp_len = static_cast<uint32_t>(resp_buf.size());
                 std::memcpy(resp_len_buf, &resp_len, 4);
                 stream->Write(resp_len_buf, 4);
-                stream->Write(reinterpret_cast<const uint8_t*>(resp.data()), resp.size());
+                stream->Write(resp_buf.data(), resp_buf.size());
                 stream->Close();
             }).detach();
         }

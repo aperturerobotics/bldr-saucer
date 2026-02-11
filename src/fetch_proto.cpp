@@ -345,6 +345,33 @@ bool DecodeFetchResponse(const uint8_t* buf, size_t len, FetchResponse& out) {
     return true;
 }
 
+bool DecodeEvalJSRequest(const uint8_t* buf, size_t len, EvalJSRequest& out) {
+    size_t offset = 0;
+    while (offset < len) {
+        uint32_t field;
+        uint8_t wire;
+        if (!decodeTag(buf, len, offset, field, wire)) return false;
+        switch (field) {
+            case 1: { // code
+                if (wire != kLengthDelimited) return false;
+                if (!decodeString(buf, len, offset, out.code)) return false;
+                break;
+            }
+            default:
+                if (!skipField(buf, len, offset, wire)) return false;
+                break;
+        }
+    }
+    return true;
+}
+
+std::vector<uint8_t> EncodeEvalJSResponse(const EvalJSResponse& resp) {
+    std::vector<uint8_t> buf;
+    encodeString(buf, 1, resp.result);
+    encodeString(buf, 2, resp.error);
+    return buf;
+}
+
 bool DecodeSaucerInit(const uint8_t* buf, size_t len, SaucerInit& out) {
     size_t offset = 0;
     while (offset < len) {

@@ -57,6 +57,23 @@ struct FetchResponse {
     ResponseData data;
 };
 
+// EvalJSRequest corresponds to saucer.EvalJSRequest.
+struct EvalJSRequest {
+    std::string code; // field 1
+};
+
+// EvalJSResponse corresponds to saucer.EvalJSResponse.
+struct EvalJSResponse {
+    std::string result; // field 1
+    std::string error;  // field 2
+};
+
+// DecodeEvalJSRequest decodes an EvalJSRequest protobuf message.
+bool DecodeEvalJSRequest(const uint8_t* buf, size_t len, EvalJSRequest& out);
+
+// EncodeEvalJSResponse encodes an EvalJSResponse protobuf message.
+std::vector<uint8_t> EncodeEvalJSResponse(const EvalJSResponse& resp);
+
 // EncodeFetchRequest_Info serializes a FetchRequest with request_info (field 1).
 std::vector<uint8_t> EncodeFetchRequest_Info(const FetchRequestInfo& info);
 
