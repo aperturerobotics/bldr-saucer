@@ -114,7 +114,7 @@ coco::stray start(saucer::application* app) {
     saucer::webview::register_scheme("bldr");
 
     auto window = saucer::window::create(app).value();
-    auto webview = saucer::smartview::create({.window = window});
+    auto webview = saucer::smartview::create({.window = window, .non_persistent_data_store = true});
 
     window->set_title("Bldr");
     window->set_size({1024, 768});

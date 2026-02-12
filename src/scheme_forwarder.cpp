@@ -14,14 +14,30 @@ static std::string toLower(const std::string& s) {
     return out;
 }
 
+// corsHeaders are Access-Control headers added to all scheme responses.
+// WebKit treats custom scheme origins as opaque (null), so all fetch requests
+// from pages loaded via bldr:// are cross-origin. These headers allow them.
+static const std::map<std::string, std::string> corsHeaders = {
+    {"Access-Control-Allow-Origin", "*"},
+    {"Access-Control-Allow-Methods", "GET, POST, OPTIONS"},
+    {"Access-Control-Allow-Headers", "*"},
+};
+
 // sendError sends an error response to the saucer writer.
 static void sendError(saucer::scheme::stream_writer& writer, int status) {
-    writer.start({.mime = "text/plain", .status = status});
+    writer.start({.mime = "text/plain", .headers = corsHeaders, .status = status});
     writer.finish();
 }
 
 void SchemeForwarder::forward(const saucer::scheme::request& req,
                                saucer::scheme::stream_writer& writer) {
+    // Handle CORS preflight directly without forwarding to Go.
+    if (toLower(req.method()) == "options") {
+        writer.start({.mime = "text/plain", .headers = corsHeaders, .status = 204});
+        writer.finish();
+        return;
+    }
+
     // Open a new yamux stream.
     auto [stream, err] = session_->OpenStream();
     if (err != yamux::Error::OK || !stream) {
@@ -93,9 +109,9 @@ void SchemeForwarder::forward(const saucer::scheme::request& req,
         if (resp.has_info && !started) {
             started = true;
 
-            // Extract Content-Type header (case-insensitive).
+            // Extract Content-Type header (case-insensitive) and merge CORS headers.
             std::string mime = "application/octet-stream";
-            std::map<std::string, std::string> hdrs;
+            std::map<std::string, std::string> hdrs(corsHeaders);
             for (const auto& [key, val] : resp.info.headers) {
                 if (toLower(key) == "content-type") {
                     mime = val;
