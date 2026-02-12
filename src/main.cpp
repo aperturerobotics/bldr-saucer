@@ -157,7 +157,7 @@ coco::stray start(saucer::application* app) {
     // The smartview's own handler returns unhandled for unrecognized messages,
     // so this handler sees them next.
     constexpr std::string_view eval_prefix = "__bldr_eval:";
-    webview->on<saucer::webview::event::message>({{.func = [eval_registry, eval_prefix](std::string_view message) -> saucer::status {
+    webview->on<saucer::webview::event::message>([eval_registry, eval_prefix](std::string_view message) -> saucer::status {
         if (!message.starts_with(eval_prefix)) {
             return saucer::status::unhandled;
         }
@@ -183,7 +183,7 @@ coco::stray start(saucer::application* app) {
             eval_registry->Deliver(eval_id, "", data);
         }
         return saucer::status::handled;
-    }}});
+    });
 
     // Start accept loop for Go-initiated streams (debug eval).
     // webview is a std::expected; use &(*webview) to get a pointer to the contained value.
