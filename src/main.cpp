@@ -113,8 +113,16 @@ coco::stray start(saucer::application* app) {
     // Register bldr:// scheme BEFORE creating the webview.
     saucer::webview::register_scheme("bldr");
 
+    // Construct a per-instance storage path from the runtime ID.
+    // This ensures concurrent bldr-saucer instances don't share webview storage.
+    auto storage = std::filesystem::temp_directory_path() / ("bldr-saucer-" + runtime_id);
+
     auto window = saucer::window::create(app).value();
-    auto webview = saucer::smartview::create({.window = window, .non_persistent_data_store = true});
+    auto webview = saucer::smartview::create({
+        .window = window,
+        .non_persistent_data_store = true,
+        .storage_path = storage,
+    });
 
     window->set_title("Bldr");
     window->set_size({1024, 768});
