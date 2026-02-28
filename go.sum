@@ -6,6 +6,8 @@ github.com/aperturerobotics/common v0.30.3 h1:NlyKlCkqD45y7O5iWGOC+QNnzzXe6dtmKY
 github.com/aperturerobotics/common v0.30.3/go.mod h1:rdhYmixjslfBT0lEMADQHWjgRKIDxZ+8Paxv4lGZfp0=
 github.com/aperturerobotics/common v0.31.0 h1:3Pt/9M0/AVb+h1TH6afrOyiT+G2l9NNbkdy7orr/+Yg=
 github.com/aperturerobotics/common v0.31.0/go.mod h1:Dq+lDv1PoH5kIV+lZr9bqcRKyTK6Le5ay/kjBaEVaHU=
+github.com/aperturerobotics/common v0.32.0 h1:wKKKUMGs8HZC2exPGVNtj81zqW687mf/rhSbme45CFs=
+github.com/aperturerobotics/common v0.32.0/go.mod h1:m46OxaMDdhPjsWBSdIwkPPCmuFVMuJiRc8/DvC0wStM=
 github.com/aperturerobotics/cpp-yamux v0.0.0-20260210211602-17940b831f59 h1:poYkT3TIaho78fYEjQ2w7oLkarSkkdK1EKdJvw9D3Z0=
 github.com/aperturerobotics/cpp-yamux v0.0.0-20260210211602-17940b831f59/go.mod h1:z43wdjwvCS9HJwxnqEtWgedAqWpeK6c5vozJoGXtUug=
 github.com/aperturerobotics/cpp-yamux v0.0.0-20260223122921-58339cfd0e5d h1:TVae+YDmMmtutvNKC5d64yXx5Woa3QIq3Ndn11J1IPQ=
