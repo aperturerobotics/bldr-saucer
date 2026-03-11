@@ -120,7 +120,6 @@ coco::stray start(saucer::application* app) {
     auto window = saucer::window::create(app).value();
     auto webview = saucer::smartview::create({
         .window = window,
-        .non_persistent_data_store = true,
         .storage_path = storage,
     });
 
@@ -128,9 +127,9 @@ coco::stray start(saucer::application* app) {
     window->set_size({1024, 768});
 
     // Handle bldr:// scheme: forward all requests to Go over yamux.
-    webview->handle_stream_scheme("bldr", [forwarder](saucer::scheme::request req, saucer::scheme::stream_writer writer) {
-        std::thread([forwarder, req = std::move(req), writer = std::move(writer)]() mutable {
-            forwarder->forward(req, writer);
+    webview->handle_scheme("bldr", [forwarder](saucer::scheme::request req, saucer::scheme::executor executor) {
+        std::thread([forwarder, req = std::move(req), executor = std::move(executor)]() mutable {
+            forwarder->forward(req, executor);
         }).detach();
     });
 

@@ -23,25 +23,33 @@ static const std::map<std::string, std::string> corsHeaders = {
     {"Access-Control-Allow-Headers", "*"},
 };
 
-// sendError sends an error response to the saucer writer.
-static void sendError(saucer::scheme::stream_writer& writer, int status) {
-    writer.start({.mime = "text/plain", .headers = corsHeaders, .status = status});
-    writer.finish();
+// sendError resolves the executor with an error status response.
+static void sendError(saucer::scheme::executor& executor, int status) {
+    executor.resolve({
+        .data = saucer::stash::empty(),
+        .mime = "text/plain",
+        .headers = corsHeaders,
+        .status = status,
+    });
 }
 
 void SchemeForwarder::forward(const saucer::scheme::request& req,
-                               saucer::scheme::stream_writer& writer) {
+                               saucer::scheme::executor& executor) {
     // Handle CORS preflight directly without forwarding to Go.
     if (toLower(req.method()) == "options") {
-        writer.start({.mime = "text/plain", .headers = corsHeaders, .status = 204});
-        writer.finish();
+        executor.resolve({
+            .data = saucer::stash::empty(),
+            .mime = "text/plain",
+            .headers = corsHeaders,
+            .status = 204,
+        });
         return;
     }
 
     // Open a new yamux stream.
     auto [stream, err] = session_->OpenStream();
     if (err != yamux::Error::OK || !stream) {
-        sendError(writer, 502);
+        sendError(executor, 502);
         return;
     }
 
@@ -56,58 +64,64 @@ void SchemeForwarder::forward(const saucer::scheme::request& req,
     }
 
     // Check if request has a body.
-    auto content = req.content();
+    auto content = req.content().data();
     info.has_body = (content.size() > 0);
 
     // Serialize and send FetchRequestInfo frame.
     auto reqInfoMsg = proto::EncodeFetchRequest_Info(info);
     if (!writeFrame(stream.get(), reqInfoMsg)) {
         stream->Close();
-        sendError(writer, 502);
+        sendError(executor, 502);
         return;
     }
 
     // Send body if present.
     if (info.has_body) {
         proto::FetchRequestData bodyData;
-        bodyData.data.assign(
-            static_cast<const uint8_t*>(content.data()),
-            static_cast<const uint8_t*>(content.data()) + content.size()
-        );
+        bodyData.data.assign(content.data(), content.data() + content.size());
         bodyData.done = true;
 
         auto reqDataMsg = proto::EncodeFetchRequest_Data(bodyData);
         if (!writeFrame(stream.get(), reqDataMsg)) {
             stream->Close();
-            sendError(writer, 502);
+            sendError(executor, 502);
             return;
         }
     }
 
+    // Create streaming stash for incremental response delivery.
+    auto result = saucer::scheme::response::stream();
+    if (!result) {
+        executor.reject(saucer::scheme::error::failed);
+        stream->Close();
+        return;
+    }
+    auto [stash, write] = std::move(*result);
+
     // Read response frames from Go.
-    bool started = false;
+    bool resolved = false;
     bool done = false;
 
     while (!done) {
         std::vector<uint8_t> frame;
         if (!readFrame(stream.get(), frame)) {
-            if (!started) {
-                sendError(writer, 502);
+            if (!resolved) {
+                executor.reject(saucer::scheme::error::failed);
             }
             break;
         }
 
         proto::FetchResponse resp;
         if (!proto::DecodeFetchResponse(frame.data(), frame.size(), resp)) {
-            if (!started) {
-                sendError(writer, 502);
+            if (!resolved) {
+                executor.reject(saucer::scheme::error::failed);
             }
             break;
         }
 
-        // Process ResponseInfo (first frame).
-        if (resp.has_info && !started) {
-            started = true;
+        // Process ResponseInfo (first frame): resolve executor with headers and streaming stash.
+        if (resp.has_info && !resolved) {
+            resolved = true;
 
             // Extract Content-Type header (case-insensitive) and merge CORS headers.
             std::string mime = "application/octet-stream";
@@ -120,22 +134,29 @@ void SchemeForwarder::forward(const saucer::scheme::request& req,
                 }
             }
 
-            writer.start({
+            executor.resolve({
+                .data = std::move(stash),
                 .mime = mime,
                 .headers = hdrs,
                 .status = static_cast<int>(resp.info.status),
             });
         }
 
-        // Process ResponseData.
+        // Process ResponseData: push body chunks via streaming write callback.
         if (resp.has_data) {
-            if (!started) {
-                started = true;
-                writer.start({.mime = "application/octet-stream", .status = 200});
+            if (!resolved) {
+                resolved = true;
+                executor.resolve({
+                    .data = std::move(stash),
+                    .mime = "application/octet-stream",
+                    .status = 200,
+                });
             }
 
-            if (!resp.data.data.empty() && writer.valid()) {
-                writer.write(saucer::stash::from(std::move(resp.data.data)));
+            if (!resp.data.data.empty()) {
+                if (!write({resp.data.data.data(), resp.data.data.size()})) {
+                    break;
+                }
             }
 
             if (resp.data.done) {
@@ -144,9 +165,7 @@ void SchemeForwarder::forward(const saucer::scheme::request& req,
         }
     }
 
-    if (started) {
-        writer.finish();
-    }
+    // Destroying write closes the streaming stash.
     stream->Close();
 }
 

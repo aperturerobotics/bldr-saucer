@@ -3,6 +3,7 @@
 #include "fetch_proto.h"
 #include "yamux/session.hpp"
 
+#include <saucer/scheme.hpp>
 #include <saucer/smartview.hpp>
 
 #include <cstdint>
@@ -21,7 +22,7 @@ public:
     explicit SchemeForwarder(yamux::Session* session) : session_(session) {}
 
     // forward handles a single scheme request by forwarding it to Go.
-    void forward(const saucer::scheme::request& req, saucer::scheme::stream_writer& writer);
+    void forward(const saucer::scheme::request& req, saucer::scheme::executor& executor);
 
 private:
     // writeFrame writes a length-prefixed frame to a yamux stream.
