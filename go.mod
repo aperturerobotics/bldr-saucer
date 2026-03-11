@@ -12,7 +12,7 @@ require (
 	github.com/aperturerobotics/json-iterator-lite v1.0.1-0.20251104042408-0c9eb8a3f726 // indirect
 	github.com/aperturerobotics/protobuf v0.0.0-20260203024654-8201686529c4 // indirect
 	github.com/aperturerobotics/protobuf-go-lite v0.12.2 // master
-	github.com/aperturerobotics/saucer v0.0.0-20260311205349-165db74d8697 // bldr/saucer-streaming
+	github.com/aperturerobotics/saucer v0.0.0-20260311225800-067ba3fcb8ab // bldr/saucer-streaming
 )
 
 require github.com/aperturerobotics/starpc v0.48.0
