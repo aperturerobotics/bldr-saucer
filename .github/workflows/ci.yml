@@ -46,10 +46,11 @@ jobs:
       - name: Install Ninja and dependencies (Linux)
         if: runner.os == 'Linux'
         run: |
+          sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
           sudo apt-get update
           sudo apt-get install -y \
             ninja-build cmake \
-            gcc-14 g++-14 \
+            gcc-15 g++-15 \
             libssl-dev \
             libgtk-4-dev \
             libadwaita-1-dev \
@@ -70,8 +71,8 @@ jobs:
           cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release ${{ matrix.cmake_extra }}
           cmake --build build --parallel
         env:
-          CC: ${{ runner.os == 'Linux' && 'gcc-14' || '' }}
-          CXX: ${{ runner.os == 'Linux' && 'g++-14' || '' }}
+          CC: ${{ runner.os == 'Linux' && 'gcc-15' || '' }}
+          CXX: ${{ runner.os == 'Linux' && 'g++-15' || '' }}
 
       - name: Configure and Build (Windows)
         if: runner.os == 'Windows'
