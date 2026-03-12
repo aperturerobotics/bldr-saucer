@@ -3,22 +3,26 @@
   "version": "0.3.1",
   "description": "Native webview bridge for Bldr using Saucer",
   "main": "index.js",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/aperturerobotics/bldr-saucer.git"
-  },
+  "license": "MIT",
   "keywords": [
     "webview",
     "saucer",
     "native",
     "bldr"
   ],
-  "author": "Aptre",
-  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aperturerobotics/bldr-saucer.git"
+  },
   "bugs": {
     "url": "https://github.com/aperturerobotics/bldr-saucer/issues"
   },
   "homepage": "https://github.com/aperturerobotics/bldr-saucer#readme",
+  "author": {
+    "name": "Aperture Robotics LLC.",
+    "email": "support@aperture.us",
+    "url": "http://aperture.us"
+  },
   "scripts": {
     "postinstall": "node install.js",
     "gen": "bun run go:aptre -- generate",
@@ -46,7 +50,7 @@
     "CMakeLists.txt"
   ],
   "devDependencies": {
-    "@aptre/common": "^0.31.0"
+    "@aptre/common": "^0.32.0"
   },
   "dependencies": {
     "@aptre/protobuf-es-lite": "^1.0.0"
