@@ -5,7 +5,7 @@ go 1.25
 require (
 	github.com/aperturerobotics/abseil-cpp v0.0.0-20260131110040-4bb56e2f9017 // indirect
 	github.com/aperturerobotics/cli v1.1.0 // indirect
-	github.com/aperturerobotics/common v0.31.0 // latest
+	github.com/aperturerobotics/common v0.32.0 // latest
 	github.com/aperturerobotics/cpp-yamux v0.0.0-20260223122921-58339cfd0e5d // master
 	github.com/aperturerobotics/go-protoc-gen-prost v0.0.0-20260219012250-e75aa9f430a2 // indirect
 	github.com/aperturerobotics/go-protoc-wasi v0.0.0-20260219012250-c573f70e4509 // indirect
@@ -13,10 +13,11 @@ require (
 	github.com/aperturerobotics/protobuf v0.0.0-20260203024654-8201686529c4 // indirect
 	github.com/aperturerobotics/protobuf-go-lite v0.12.2 // master
 	github.com/aperturerobotics/saucer v0.0.0-20260311225800-067ba3fcb8ab // master
-	github.com/aperturerobotics/starpc v0.47.0
+	github.com/aperturerobotics/starpc v0.49.0
 )
 
 require (
+	github.com/aperturerobotics/go-websocket v1.8.15-0.20260228104546-35e37959349c // indirect
 	github.com/aperturerobotics/util v1.32.4 // indirect
 	github.com/coder/websocket v1.8.14 // indirect
 	github.com/libp2p/go-buffer-pool v0.1.0 // indirect
