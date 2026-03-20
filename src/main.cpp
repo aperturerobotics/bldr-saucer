@@ -133,6 +133,20 @@ coco::stray start(saucer::application* app) {
         }).detach();
     });
 
+    // SPA guard: the app only works at /index.html with hash routing.
+    // If something tries to navigate to e.g. bldr:///feed.xml, block it.
+    webview->on<saucer::webview::event::navigate>([](const saucer::navigation& nav) -> saucer::policy {
+        auto target = nav.url();
+        if (target.scheme() != "bldr") {
+            return saucer::policy::block;
+        }
+        auto p = target.path().string();
+        if (p != "/index.html" && p != "/" && !p.empty()) {
+            return saucer::policy::block;
+        }
+        return saucer::policy::allow;
+    });
+
     // Navigate via HTML redirect (works around WebKit's loadFileURL issue with custom schemes).
     std::string nav_url = "bldr:///index.html";
     const char* doc_id_env = std::getenv("BLDR_WEB_DOCUMENT_ID");
