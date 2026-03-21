@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -248,18 +249,18 @@ func TestMultipleStreams(t *testing.T) {
 	if err != nil {
 		t.Fatalf("accept initial: %v", err)
 	}
-	var fetches string
-	for i := 0; i < numExtraRequests; i++ {
-		fetches += fmt.Sprintf("fetch('bldr:///test/%d').catch(()=>{});", i)
+	var fetches strings.Builder
+	for i := range numExtraRequests {
+		fetches.WriteString(fmt.Sprintf("fetch('bldr:///test/%d').catch(()=>{});", i))
 	}
-	html := []byte(fmt.Sprintf("<html><body><script>%s</script></body></html>", fetches))
+	html := fmt.Appendf(nil, "<html><body><script>%s</script></body></html>", fetches.String())
 	if err := serveRequest(stream, 200, "text/html", html); err != nil {
 		t.Fatalf("serve initial: %v", err)
 	}
 
 	// Accept and serve the fetch-triggered streams.
 	var wg sync.WaitGroup
-	for i := 0; i < numExtraRequests; i++ {
+	for i := range numExtraRequests {
 		wg.Add(1)
 		go func(idx int) {
 			defer wg.Done()
@@ -298,8 +299,8 @@ func TestStreamingResponse(t *testing.T) {
 	}
 
 	// Send multiple body chunks.
-	for i := 0; i < 10; i++ {
-		chunk := []byte(fmt.Sprintf("chunk-%d\n", i))
+	for i := range 10 {
+		chunk := fmt.Appendf(nil, "chunk-%d\n", i)
 		if err := writeFrame(stream, buildResponseDataFrame(chunk, false)); err != nil {
 			t.Fatalf("write chunk %d: %v", i, err)
 		}

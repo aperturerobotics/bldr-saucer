@@ -394,6 +394,30 @@ bool DecodeSaucerInit(const uint8_t* buf, size_t len, SaucerInit& out) {
                 out.external_links = static_cast<uint32_t>(v);
                 break;
             }
+            case 3: { // app_name
+                if (wire != kLengthDelimited) return false;
+                if (!decodeString(buf, len, offset, out.app_name)) return false;
+                break;
+            }
+            case 4: { // window_title
+                if (wire != kLengthDelimited) return false;
+                if (!decodeString(buf, len, offset, out.window_title)) return false;
+                break;
+            }
+            case 5: { // window_width
+                if (wire != kVarint) return false;
+                uint64_t v;
+                if (!decodeVarint(buf, len, offset, v)) return false;
+                out.window_width = static_cast<uint32_t>(v);
+                break;
+            }
+            case 6: { // window_height
+                if (wire != kVarint) return false;
+                uint64_t v;
+                if (!decodeVarint(buf, len, offset, v)) return false;
+                out.window_height = static_cast<uint32_t>(v);
+                break;
+            }
             default:
                 if (!skipField(buf, len, offset, wire)) return false;
                 break;

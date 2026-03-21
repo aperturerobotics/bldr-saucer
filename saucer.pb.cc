@@ -31,8 +31,16 @@ namespace saucer {
 inline constexpr SaucerInit::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
       : _cached_size_{0},
+        app_name_(
+            &::google::protobuf::internal::fixed_address_empty_string,
+            ::_pbi::ConstantInitialized()),
+        window_title_(
+            &::google::protobuf::internal::fixed_address_empty_string,
+            ::_pbi::ConstantInitialized()),
         dev_tools_{false},
-        external_links_{static_cast< ::saucer::ExternalLinks >(0)} {}
+        external_links_{static_cast< ::saucer::ExternalLinks >(0)},
+        window_width_{0u},
+        window_height_{0u} {}
 
 template <typename>
 PROTOBUF_CONSTEXPR SaucerInit::SaucerInit(::_pbi::ConstantInitialized)
@@ -63,11 +71,19 @@ const ::uint32_t
         protodesc_cold) = {
         0x081, // bitmap
         PROTOBUF_FIELD_OFFSET(::saucer::SaucerInit, _impl_._has_bits_),
-        5, // hasbit index offset
+        9, // hasbit index offset
         PROTOBUF_FIELD_OFFSET(::saucer::SaucerInit, _impl_.dev_tools_),
         PROTOBUF_FIELD_OFFSET(::saucer::SaucerInit, _impl_.external_links_),
+        PROTOBUF_FIELD_OFFSET(::saucer::SaucerInit, _impl_.app_name_),
+        PROTOBUF_FIELD_OFFSET(::saucer::SaucerInit, _impl_.window_title_),
+        PROTOBUF_FIELD_OFFSET(::saucer::SaucerInit, _impl_.window_width_),
+        PROTOBUF_FIELD_OFFSET(::saucer::SaucerInit, _impl_.window_height_),
+        2,
+        3,
         0,
         1,
+        4,
+        5,
 };
 
 static const ::_pbi::MigrationSchema
@@ -80,18 +96,21 @@ static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
 const char descriptor_table_protodef_github_2ecom_2faperturerobotics_2fbldr_2dsaucer_2fsaucer_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
     "\n4github.com/aperturerobotics/bldr-sauce"
-    "r/saucer.proto\022\006saucer\"N\n\nSaucerInit\022\021\n\t"
-    "dev_tools\030\001 \001(\010\022-\n\016external_links\030\002 \001(\0162"
-    "\025.saucer.ExternalLinks*G\n\rExternalLinks\022"
-    "\035\n\031EXTERNAL_LINKS_OS_BROWSER\020\000\022\027\n\023EXTERN"
-    "AL_LINKS_DENY\020\001B5Z3github.com/aperturero"
-    "botics/bldr-saucer;bldr_saucerb\006proto3"
+    "r/saucer.proto\022\006saucer\"\243\001\n\nSaucerInit\022\021\n"
+    "\tdev_tools\030\001 \001(\010\022-\n\016external_links\030\002 \001(\016"
+    "2\025.saucer.ExternalLinks\022\020\n\010app_name\030\003 \001("
+    "\t\022\024\n\014window_title\030\004 \001(\t\022\024\n\014window_width\030"
+    "\005 \001(\r\022\025\n\rwindow_height\030\006 \001(\r*G\n\rExternal"
+    "Links\022\035\n\031EXTERNAL_LINKS_OS_BROWSER\020\000\022\027\n\023"
+    "EXTERNAL_LINKS_DENY\020\001B5Z3github.com/aper"
+    "turerobotics/bldr-saucer;bldr_saucerb\006pr"
+    "oto3"
 };
 static ::absl::once_flag descriptor_table_github_2ecom_2faperturerobotics_2fbldr_2dsaucer_2fsaucer_2eproto_once;
 PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_github_2ecom_2faperturerobotics_2fbldr_2dsaucer_2fsaucer_2eproto = {
     false,
     false,
-    278,
+    364,
     descriptor_table_protodef_github_2ecom_2faperturerobotics_2fbldr_2dsaucer_2fsaucer_2eproto,
     "github.com/aperturerobotics/bldr-saucer/saucer.proto",
     &descriptor_table_github_2ecom_2faperturerobotics_2fbldr_2dsaucer_2fsaucer_2eproto_once,
@@ -130,30 +149,53 @@ SaucerInit::SaucerInit(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:saucer.SaucerInit)
 }
+PROTOBUF_NDEBUG_INLINE SaucerInit::Impl_::Impl_(
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] const ::saucer::SaucerInit& from_msg)
+      : _has_bits_{from._has_bits_},
+        _cached_size_{0},
+        app_name_(arena, from.app_name_),
+        window_title_(arena, from.window_title_) {}
+
 SaucerInit::SaucerInit(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const SaucerInit& from)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const SaucerInit& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, SaucerInit_class_data_.base()),
+    : ::google::protobuf::Message(arena, SaucerInit_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena),
+    : ::google::protobuf::Message(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-      _impl_(from._impl_) {
+  SaucerInit* const _this = this;
+  (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
+  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
+  ::memcpy(reinterpret_cast<char*>(&_impl_) +
+               offsetof(Impl_, dev_tools_),
+           reinterpret_cast<const char*>(&from._impl_) +
+               offsetof(Impl_, dev_tools_),
+           offsetof(Impl_, window_height_) -
+               offsetof(Impl_, dev_tools_) +
+               sizeof(Impl_::window_height_));
+
+  // @@protoc_insertion_point(copy_constructor:saucer.SaucerInit)
 }
 PROTOBUF_NDEBUG_INLINE SaucerInit::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0} {}
+      : _cached_size_{0},
+        app_name_(arena),
+        window_title_(arena) {}
 
 inline void SaucerInit::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, dev_tools_),
            0,
-           offsetof(Impl_, external_links_) -
+           offsetof(Impl_, window_height_) -
                offsetof(Impl_, dev_tools_) +
-               sizeof(Impl_::external_links_));
+               sizeof(Impl_::window_height_));
 }
 SaucerInit::~SaucerInit() {
   // @@protoc_insertion_point(destructor:saucer.SaucerInit)
@@ -166,6 +208,8 @@ inline void SaucerInit::SharedDtor(MessageLite& self) {
   }
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.app_name_.Destroy();
+  this_._impl_.window_title_.Destroy();
   this_._impl_.~Impl_();
 }
 
@@ -175,7 +219,7 @@ inline void* PROTOBUF_NONNULL SaucerInit::PlacementNew_(
   return ::new (mem) SaucerInit(arena);
 }
 constexpr auto SaucerInit::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(SaucerInit),
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(SaucerInit),
                                             alignof(SaucerInit));
 }
 constexpr auto SaucerInit::InternalGenerateClassData_() {
@@ -212,16 +256,16 @@ SaucerInit::GetClassData() const {
   return SaucerInit_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<1, 2, 0, 0, 2>
+const ::_pbi::TcParseTable<3, 6, 0, 46, 2>
 SaucerInit::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(SaucerInit, _impl_._has_bits_),
     0, // no _extensions_
-    2, 8,  // max_field_number, fast_idx_mask
+    6, 56,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
-    4294967292,  // skipmap
+    4294967232,  // skipmap
     offsetof(decltype(_table_), field_entries),
-    2,  // num_field_entries
+    6,  // num_field_entries
     0,  // num_aux_entries
     offsetof(decltype(_table_), field_names),  // no aux_entries
     SaucerInit_class_data_.base(),
@@ -231,24 +275,54 @@ SaucerInit::_table_ = {
     ::_pbi::TcParser::GetTable<::saucer::SaucerInit>(),  // to_prefetch
     #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
-    // .saucer.ExternalLinks external_links = 2;
-    {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(SaucerInit, _impl_.external_links_), 1>(),
-     {16, 1, 0,
-      PROTOBUF_FIELD_OFFSET(SaucerInit, _impl_.external_links_)}},
+    {::_pbi::TcParser::MiniParse, {}},
     // bool dev_tools = 1;
-    {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(SaucerInit, _impl_.dev_tools_), 0>(),
-     {8, 0, 0,
+    {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(SaucerInit, _impl_.dev_tools_), 2>(),
+     {8, 2, 0,
       PROTOBUF_FIELD_OFFSET(SaucerInit, _impl_.dev_tools_)}},
+    // .saucer.ExternalLinks external_links = 2;
+    {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(SaucerInit, _impl_.external_links_), 3>(),
+     {16, 3, 0,
+      PROTOBUF_FIELD_OFFSET(SaucerInit, _impl_.external_links_)}},
+    // string app_name = 3;
+    {::_pbi::TcParser::FastUS1,
+     {26, 0, 0,
+      PROTOBUF_FIELD_OFFSET(SaucerInit, _impl_.app_name_)}},
+    // string window_title = 4;
+    {::_pbi::TcParser::FastUS1,
+     {34, 1, 0,
+      PROTOBUF_FIELD_OFFSET(SaucerInit, _impl_.window_title_)}},
+    // uint32 window_width = 5;
+    {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(SaucerInit, _impl_.window_width_), 4>(),
+     {40, 4, 0,
+      PROTOBUF_FIELD_OFFSET(SaucerInit, _impl_.window_width_)}},
+    // uint32 window_height = 6;
+    {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(SaucerInit, _impl_.window_height_), 5>(),
+     {48, 5, 0,
+      PROTOBUF_FIELD_OFFSET(SaucerInit, _impl_.window_height_)}},
+    {::_pbi::TcParser::MiniParse, {}},
   }}, {{
     65535, 65535
   }}, {{
     // bool dev_tools = 1;
-    {PROTOBUF_FIELD_OFFSET(SaucerInit, _impl_.dev_tools_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
+    {PROTOBUF_FIELD_OFFSET(SaucerInit, _impl_.dev_tools_), _Internal::kHasBitsOffset + 2, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
     // .saucer.ExternalLinks external_links = 2;
-    {PROTOBUF_FIELD_OFFSET(SaucerInit, _impl_.external_links_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kOpenEnum)},
+    {PROTOBUF_FIELD_OFFSET(SaucerInit, _impl_.external_links_), _Internal::kHasBitsOffset + 3, 0, (0 | ::_fl::kFcOptional | ::_fl::kOpenEnum)},
+    // string app_name = 3;
+    {PROTOBUF_FIELD_OFFSET(SaucerInit, _impl_.app_name_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
+    // string window_title = 4;
+    {PROTOBUF_FIELD_OFFSET(SaucerInit, _impl_.window_title_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
+    // uint32 window_width = 5;
+    {PROTOBUF_FIELD_OFFSET(SaucerInit, _impl_.window_width_), _Internal::kHasBitsOffset + 4, 0, (0 | ::_fl::kFcOptional | ::_fl::kUInt32)},
+    // uint32 window_height = 6;
+    {PROTOBUF_FIELD_OFFSET(SaucerInit, _impl_.window_height_), _Internal::kHasBitsOffset + 5, 0, (0 | ::_fl::kFcOptional | ::_fl::kUInt32)},
   }},
   // no aux_entries
   {{
+    "\21\0\0\10\14\0\0\0"
+    "saucer.SaucerInit"
+    "app_name"
+    "window_title"
   }},
 };
 PROTOBUF_NOINLINE void SaucerInit::Clear() {
@@ -260,9 +334,17 @@ PROTOBUF_NOINLINE void SaucerInit::Clear() {
 
   cached_has_bits = _impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
+      _impl_.app_name_.ClearNonDefaultToEmpty();
+    }
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+      _impl_.window_title_.ClearNonDefaultToEmpty();
+    }
+  }
+  if (BatchCheckHasBit(cached_has_bits, 0x0000003cU)) {
     ::memset(&_impl_.dev_tools_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.external_links_) -
-        reinterpret_cast<char*>(&_impl_.dev_tools_)) + sizeof(_impl_.external_links_));
+        reinterpret_cast<char*>(&_impl_.window_height_) -
+        reinterpret_cast<char*>(&_impl_.dev_tools_)) + sizeof(_impl_.window_height_));
   }
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
@@ -288,7 +370,7 @@ PROTOBUF_NOINLINE void SaucerInit::Clear() {
 
   cached_has_bits = this_._impl_._has_bits_[0];
   // bool dev_tools = 1;
-  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000004U)) {
     if (this_._internal_dev_tools() != 0) {
       target = stream->EnsureSpace(target);
       target = ::_pbi::WireFormatLite::WriteBoolToArray(
@@ -297,11 +379,49 @@ PROTOBUF_NOINLINE void SaucerInit::Clear() {
   }
 
   // .saucer.ExternalLinks external_links = 2;
-  if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000008U)) {
     if (this_._internal_external_links() != 0) {
       target = stream->EnsureSpace(target);
       target = ::_pbi::WireFormatLite::WriteEnumToArray(
           2, this_._internal_external_links(), target);
+    }
+  }
+
+  // string app_name = 3;
+  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
+    if (!this_._internal_app_name().empty()) {
+      const ::std::string& _s = this_._internal_app_name();
+      ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+          _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "saucer.SaucerInit.app_name");
+      target = stream->WriteStringMaybeAliased(3, _s, target);
+    }
+  }
+
+  // string window_title = 4;
+  if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+    if (!this_._internal_window_title().empty()) {
+      const ::std::string& _s = this_._internal_window_title();
+      ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+          _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "saucer.SaucerInit.window_title");
+      target = stream->WriteStringMaybeAliased(4, _s, target);
+    }
+  }
+
+  // uint32 window_width = 5;
+  if (CheckHasBit(cached_has_bits, 0x00000010U)) {
+    if (this_._internal_window_width() != 0) {
+      target = stream->EnsureSpace(target);
+      target = ::_pbi::WireFormatLite::WriteUInt32ToArray(
+          5, this_._internal_window_width(), target);
+    }
+  }
+
+  // uint32 window_height = 6;
+  if (CheckHasBit(cached_has_bits, 0x00000020U)) {
+    if (this_._internal_window_height() != 0) {
+      target = stream->EnsureSpace(target);
+      target = ::_pbi::WireFormatLite::WriteUInt32ToArray(
+          6, this_._internal_window_height(), target);
     }
   }
 
@@ -330,18 +450,46 @@ PROTOBUF_NOINLINE void SaucerInit::Clear() {
 
   ::_pbi::Prefetch5LinesFrom7Lines(&this_);
   cached_has_bits = this_._impl_._has_bits_[0];
-  if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
-    // bool dev_tools = 1;
+  if (BatchCheckHasBit(cached_has_bits, 0x0000003fU)) {
+    // string app_name = 3;
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
+      if (!this_._internal_app_name().empty()) {
+        total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
+                                        this_._internal_app_name());
+      }
+    }
+    // string window_title = 4;
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+      if (!this_._internal_window_title().empty()) {
+        total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
+                                        this_._internal_window_title());
+      }
+    }
+    // bool dev_tools = 1;
+    if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       if (this_._internal_dev_tools() != 0) {
         total_size += 2;
       }
     }
     // .saucer.ExternalLinks external_links = 2;
-    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000008U)) {
       if (this_._internal_external_links() != 0) {
         total_size += 1 +
                       ::_pbi::WireFormatLite::EnumSize(this_._internal_external_links());
+      }
+    }
+    // uint32 window_width = 5;
+    if (CheckHasBit(cached_has_bits, 0x00000010U)) {
+      if (this_._internal_window_width() != 0) {
+        total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(
+            this_._internal_window_width());
+      }
+    }
+    // uint32 window_height = 6;
+    if (CheckHasBit(cached_has_bits, 0x00000020U)) {
+      if (this_._internal_window_height() != 0) {
+        total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(
+            this_._internal_window_height());
       }
     }
   }
@@ -363,15 +511,43 @@ void SaucerInit::MergeImpl(::google::protobuf::MessageLite& to_msg,
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
+  if (BatchCheckHasBit(cached_has_bits, 0x0000003fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
+      if (!from._internal_app_name().empty()) {
+        _this->_internal_set_app_name(from._internal_app_name());
+      } else {
+        if (_this->_impl_.app_name_.IsDefault()) {
+          _this->_internal_set_app_name("");
+        }
+      }
+    }
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+      if (!from._internal_window_title().empty()) {
+        _this->_internal_set_window_title(from._internal_window_title());
+      } else {
+        if (_this->_impl_.window_title_.IsDefault()) {
+          _this->_internal_set_window_title("");
+        }
+      }
+    }
+    if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       if (from._internal_dev_tools() != 0) {
         _this->_impl_.dev_tools_ = from._impl_.dev_tools_;
       }
     }
-    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000008U)) {
       if (from._internal_external_links() != 0) {
         _this->_impl_.external_links_ = from._impl_.external_links_;
+      }
+    }
+    if (CheckHasBit(cached_has_bits, 0x00000010U)) {
+      if (from._internal_window_width() != 0) {
+        _this->_impl_.window_width_ = from._impl_.window_width_;
+      }
+    }
+    if (CheckHasBit(cached_has_bits, 0x00000020U)) {
+      if (from._internal_window_height() != 0) {
+        _this->_impl_.window_height_ = from._impl_.window_height_;
       }
     }
   }
@@ -390,11 +566,15 @@ void SaucerInit::CopyFrom(const SaucerInit& from) {
 
 void SaucerInit::InternalSwap(SaucerInit* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
+  auto* arena = GetArena();
+  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.app_name_, &other->_impl_.app_name_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.window_title_, &other->_impl_.window_title_, arena);
   ::google::protobuf::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(SaucerInit, _impl_.external_links_)
-      + sizeof(SaucerInit::_impl_.external_links_)
+      PROTOBUF_FIELD_OFFSET(SaucerInit, _impl_.window_height_)
+      + sizeof(SaucerInit::_impl_.window_height_)
       - PROTOBUF_FIELD_OFFSET(SaucerInit, _impl_.dev_tools_)>(
           reinterpret_cast<char*>(&_impl_.dev_tools_),
           reinterpret_cast<char*>(&other->_impl_.dev_tools_));

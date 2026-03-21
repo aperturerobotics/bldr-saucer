@@ -123,8 +123,21 @@ coco::stray start(saucer::application* app) {
         .storage_path = storage,
     });
 
-    window->set_title("Bldr");
-    window->set_size({1024, 768});
+    // Apply branding from SaucerInit, with defaults.
+    std::string title = saucer_init.window_title;
+    if (title.empty()) {
+        title = saucer_init.app_name;
+    }
+    if (title.empty()) {
+        title = "Bldr";
+    }
+    window->set_title(title);
+
+    uint32_t win_w = saucer_init.window_width;
+    uint32_t win_h = saucer_init.window_height;
+    if (win_w == 0) win_w = 1024;
+    if (win_h == 0) win_h = 768;
+    window->set_size({static_cast<int>(win_w), static_cast<int>(win_h)});
 
     // Handle bldr:// scheme: forward all requests to Go over yamux.
     webview->handle_scheme("bldr", [forwarder](saucer::scheme::request req, saucer::scheme::executor executor) {
@@ -316,7 +329,20 @@ coco::stray start(saucer::application* app) {
 }
 
 int main() {
-    auto app_result = saucer::application::create({.id = "bldr"});
+    // Parse SaucerInit early to get the app name for the application ID.
+    std::string app_id = "bldr";
+    const char* init_b64 = std::getenv("BLDR_SAUCER_INIT");
+    if (init_b64) {
+        auto data = bldr::proto::Base64Decode(init_b64);
+        if (!data.empty()) {
+            bldr::proto::SaucerInit init;
+            if (bldr::proto::DecodeSaucerInit(data.data(), data.size(), init) && !init.app_name.empty()) {
+                app_id = init.app_name;
+            }
+        }
+    }
+
+    auto app_result = saucer::application::create({.id = app_id});
     if (!app_result) {
         std::cerr << "[bldr-saucer] failed to create application" << std::endl;
         return 1;

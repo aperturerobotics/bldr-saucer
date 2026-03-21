@@ -13,6 +13,10 @@ namespace proto {
 struct SaucerInit {
     bool dev_tools = false;      // field 1
     uint32_t external_links = 0; // field 2 (enum ExternalLinks)
+    std::string app_name;        // field 3
+    std::string window_title;    // field 4
+    uint32_t window_width = 0;   // field 5
+    uint32_t window_height = 0;  // field 6
 };
 
 // DecodeSaucerInit decodes a SaucerInit protobuf message.

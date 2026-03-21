@@ -18,4 +18,12 @@ message SaucerInit {
   bool dev_tools = 1;
   // ExternalLinks configures how external links are handled.
   ExternalLinks external_links = 2;
+  // AppName is the application display name.
+  string app_name = 3;
+  // WindowTitle overrides the window title (defaults to app_name).
+  string window_title = 4;
+  // WindowWidth is the default window width in pixels.
+  uint32 window_width = 5;
+  // WindowHeight is the default window height in pixels.
+  uint32 window_height = 6;
 }

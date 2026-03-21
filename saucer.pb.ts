@@ -57,6 +57,30 @@ export interface SaucerInit {
    * @generated from field: saucer.ExternalLinks external_links = 2;
    */
   externalLinks?: ExternalLinks
+  /**
+   * AppName is the application display name.
+   *
+   * @generated from field: string app_name = 3;
+   */
+  appName?: string
+  /**
+   * WindowTitle overrides the window title (defaults to app_name).
+   *
+   * @generated from field: string window_title = 4;
+   */
+  windowTitle?: string
+  /**
+   * WindowWidth is the default window width in pixels.
+   *
+   * @generated from field: uint32 window_width = 5;
+   */
+  windowWidth?: number
+  /**
+   * WindowHeight is the default window height in pixels.
+   *
+   * @generated from field: uint32 window_height = 6;
+   */
+  windowHeight?: number
 }
 
 // SaucerInit contains the message type declaration for SaucerInit.
@@ -65,6 +89,10 @@ export const SaucerInit: MessageType<SaucerInit> = createMessageType({
   fields: [
     { no: 1, name: 'dev_tools', kind: 'scalar', T: ScalarType.BOOL },
     { no: 2, name: 'external_links', kind: 'enum', T: ExternalLinks_Enum },
+    { no: 3, name: 'app_name', kind: 'scalar', T: ScalarType.STRING },
+    { no: 4, name: 'window_title', kind: 'scalar', T: ScalarType.STRING },
+    { no: 5, name: 'window_width', kind: 'scalar', T: ScalarType.UINT32 },
+    { no: 6, name: 'window_height', kind: 'scalar', T: ScalarType.UINT32 },
   ] as readonly PartialFieldInfo[],
   packedByDefault: true,
 })
