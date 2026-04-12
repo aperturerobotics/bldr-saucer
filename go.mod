@@ -5,7 +5,7 @@ go 1.25.0
 require (
 	github.com/aperturerobotics/abseil-cpp v0.0.0-20260131110040-4bb56e2f9017 // indirect
 	github.com/aperturerobotics/cli v1.1.0 // indirect
-	github.com/aperturerobotics/common v0.32.2 // latest
+	github.com/aperturerobotics/common v0.32.3 // latest
 	github.com/aperturerobotics/cpp-yamux v0.0.0-20260223122921-58339cfd0e5d // master
 	github.com/aperturerobotics/go-protoc-gen-prost v0.0.0-20260329113538-218ccd8f20e0 // indirect
 	github.com/aperturerobotics/go-protoc-wasi v0.0.0-20260329113540-600516012db3 // indirect
@@ -26,6 +26,6 @@ require (
 	github.com/sirupsen/logrus v1.9.5-0.20260309202648-9f0600962f75 // indirect
 	github.com/tetratelabs/wazero v1.11.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20250705151800-55b8f293f342 // indirect
-	golang.org/x/mod v0.34.0 // indirect
+	golang.org/x/mod v0.35.0 // indirect
 	golang.org/x/sys v0.42.0 // indirect
 )
