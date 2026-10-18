@@ -2,14 +2,9 @@
 // @generated from file github.com/aperturerobotics/bldr-saucer/saucer.proto (package saucer, syntax proto3)
 /* eslint-disable */
 
-import type { MessageType, PartialFieldInfo } from '@aptre/protobuf-es-lite'
-import {
-  createEnumType,
-  createMessageType,
-  ScalarType,
-} from '@aptre/protobuf-es-lite'
-
-export const protobufPackage = 'saucer'
+import { createEnumType } from '@aptre/protobuf-es-lite/enum'
+import type { MessageType } from '@aptre/protobuf-es-lite/message'
+import { createMessageType } from '@aptre/protobuf-es-lite/message'
 
 /**
  * ExternalLinks configures how external links are handled.
@@ -19,24 +14,22 @@ export const protobufPackage = 'saucer'
 export enum ExternalLinks {
   /**
    * EXTERNAL_LINKS_OS_BROWSER opens external links in the OS default browser.
-   *
-   * @generated from enum value: EXTERNAL_LINKS_OS_BROWSER = 0;
    */
   OS_BROWSER = 0,
 
   /**
    * EXTERNAL_LINKS_DENY denies all external link navigation.
-   *
-   * @generated from enum value: EXTERNAL_LINKS_DENY = 1;
    */
   DENY = 1,
 }
 
-// ExternalLinks_Enum is the enum type for ExternalLinks.
-export const ExternalLinks_Enum = createEnumType('saucer.ExternalLinks', [
-  { no: 0, name: 'EXTERNAL_LINKS_OS_BROWSER' },
-  { no: 1, name: 'EXTERNAL_LINKS_DENY' },
-])
+export const ExternalLinks_Enum = /* @__PURE__ */ createEnumType(
+  'saucer.ExternalLinks',
+  [
+    [0, 'EXTERNAL_LINKS_OS_BROWSER'],
+    [1, 'EXTERNAL_LINKS_DENY'],
+  ],
+)
 
 /**
  * SaucerInit is passed from Go to the Saucer C++ process on startup.
@@ -47,52 +40,36 @@ export const ExternalLinks_Enum = createEnumType('saucer.ExternalLinks', [
 export interface SaucerInit {
   /**
    * DevTools enables the developer tools.
-   *
-   * @generated from field: bool dev_tools = 1;
    */
   devTools?: boolean
   /**
    * ExternalLinks configures how external links are handled.
-   *
-   * @generated from field: saucer.ExternalLinks external_links = 2;
    */
   externalLinks?: ExternalLinks
   /**
    * AppName is the application display name.
-   *
-   * @generated from field: string app_name = 3;
    */
   appName?: string
   /**
    * WindowTitle overrides the window title (defaults to app_name).
-   *
-   * @generated from field: string window_title = 4;
    */
   windowTitle?: string
   /**
    * WindowWidth is the default window width in pixels.
-   *
-   * @generated from field: uint32 window_width = 5;
    */
   windowWidth?: number
   /**
    * WindowHeight is the default window height in pixels.
-   *
-   * @generated from field: uint32 window_height = 6;
    */
   windowHeight?: number
 }
 
-// SaucerInit contains the message type declaration for SaucerInit.
-export const SaucerInit: MessageType<SaucerInit> = createMessageType({
-  typeName: 'saucer.SaucerInit',
-  fields: [
-    { no: 1, name: 'dev_tools', kind: 'scalar', T: ScalarType.BOOL },
-    { no: 2, name: 'external_links', kind: 'enum', T: ExternalLinks_Enum },
-    { no: 3, name: 'app_name', kind: 'scalar', T: ScalarType.STRING },
-    { no: 4, name: 'window_title', kind: 'scalar', T: ScalarType.STRING },
-    { no: 5, name: 'window_width', kind: 'scalar', T: ScalarType.UINT32 },
-    { no: 6, name: 'window_height', kind: 'scalar', T: ScalarType.UINT32 },
-  ] as readonly PartialFieldInfo[],
-  packedByDefault: true,
-})
+export const SaucerInit: MessageType<SaucerInit> =
+  /* @__PURE__ */ createMessageType<SaucerInit>('saucer.SaucerInit', () => [
+    [1, 'dev_tools', 8],
+    [2, 'external_links', 14, 0, ExternalLinks_Enum],
+    [3, 'app_name', 9],
+    [4, 'window_title', 9],
+    [5, 'window_width', 13],
+    [6, 'window_height', 13],
+  ])
