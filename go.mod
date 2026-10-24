@@ -5,7 +5,7 @@ go 1.27.0
 require (
 	github.com/aperturerobotics/common v0.36.5 // latest
 	github.com/aperturerobotics/cpp-yamux v0.0.0-20260929192932-26bdf6cab5b3 // master
-	github.com/aperturerobotics/protobuf-go-lite v0.19.1-0.20261018054529-f60c4d2691ea // master
+	github.com/aperturerobotics/protobuf-go-lite v0.19.1-0.20261024022728-f0dcc8ef200f // master
 	github.com/aperturerobotics/saucer v0.0.0-20260317232052-4db05a4e0b4c // master
 	github.com/aperturerobotics/starpc v0.52.3
 )
