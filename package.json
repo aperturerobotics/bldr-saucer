@@ -54,12 +54,12 @@
     "@aptre/common": "^0.36.0"
   },
   "dependencies": {
-    "@aptre/protobuf-es-lite": "1.2.1"
+    "@aptre/protobuf-es-lite": "1.2.4"
   },
   "resolutions": {
-    "@aptre/protobuf-es-lite": "1.2.1"
+    "@aptre/protobuf-es-lite": "1.2.4"
   },
   "overrides": {
-    "@aptre/protobuf-es-lite": "1.2.1"
+    "@aptre/protobuf-es-lite": "1.2.4"
   }
 }
