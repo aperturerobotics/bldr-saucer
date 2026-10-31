@@ -51,15 +51,15 @@
     "CMakeLists.txt"
   ],
   "devDependencies": {
-    "@aptre/common": "^0.36.0"
+    "@aptre/common": "^0.37.0"
   },
   "dependencies": {
-    "@aptre/protobuf-es-lite": "1.2.4"
+    "@aptre/protobuf-es-lite": "1.2.6"
   },
   "resolutions": {
-    "@aptre/protobuf-es-lite": "1.2.4"
+    "@aptre/protobuf-es-lite": "1.2.6"
   },
   "overrides": {
-    "@aptre/protobuf-es-lite": "1.2.4"
+    "@aptre/protobuf-es-lite": "1.2.6"
   }
 }
